@@ -27,6 +27,7 @@ import {
 } from './controls.js'
 import * as Utils from '../utils.js'
 import * as Icon from './icon.js'
+import { applyFranceMask, removeFranceMask } from '../france-mask.js'
 
 // Those options are not saved on the server, so they can live here
 // instead of in umap.properties
@@ -209,6 +210,13 @@ const ManageTilelayerMixin = {
       // Leaflet throw an error, and then the map is no more editable
     }
     this.setOverlay()
+
+    // Apply France mask after tile layer selection so anything outside France is obscured
+    try {
+      applyFranceMask(this)
+    } catch (e) {
+      console.error('Could not apply France mask', e)
+    }
   },
 
   eachTileLayer: function (callback, context) {
