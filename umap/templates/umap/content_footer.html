@@ -1,22 +1,74 @@
 {% load i18n %}
 
-<footer>
-  <a href="{% url "home" %}" class="branding">uMap</a>
-  <span>{% trans "An OpenStreetMap project" %}
-  ({% trans "version" %} <a href="https://docs.umap-project.org/en/stable/changelog/">{{ UMAP_VERSION }}</a>)</span>
-  {% if UMAP_HOST_INFOS.url and UMAP_HOST_INFOS.name %}<span>{% trans "Hosted by" %} <a href="{{ UMAP_HOST_INFOS.url }}">{{ UMAP_HOST_INFOS.name }}</a></span>{% endif %}
-  {% if UMAP_HOST_INFOS.email %}<a href="mailto:{{ UMAP_HOST_INFOS.email }}">{% trans "Contact" %}</a>{% endif %}
-  {% if UMAP_HELP_URL %}<a href="{{ UMAP_HELP_URL }}">{% trans "Help" %}</a>{% endif %}
-  {% get_language_info_list for LANGUAGES as languages %}
-  <form action="{% url "set_language" %}" method="post" class="i18n_switch">
-    {% csrf_token %}
-    <select name="language" onchange="this.form.submit()">
-      {% for language in languages %}
-        <option value="{{ language.code }}"
-                {% if language.code == LANGUAGE_CODE %}selected="selected"{% endif %}>
-          {{ language.name_local }} ({{ language.code }})
-        </option>
-      {% endfor %}
-    </select>
-  </form>
+<footer class="fr-footer" role="contentinfo" id="footer">
+  <div class="fr-container">
+    <div class="fr-footer__body">
+      <!-- Left column: uMap branding -->
+      <div class="fr-footer__brand fr-enlarge-link">
+        <a href="{% url 'home' %}" title="{% trans 'Back to home' %}">
+          <p class="fr-logo">
+            Nom de l'outil
+          </p>
+        </a>
+        <p class="fr-footer__brand-desc">
+          (<a href="https://docs.umap-project.org/en/stable/changelog/">{{ UMAP_VERSION }}</a>)
+        </p>
+      </div>
+
+      <!-- Right column: content and external links -->
+      <div class="fr-footer__content">
+        <p class="fr-footer__content-desc">
+          *Description de l'outil*<br>
+          Basé sur <a href="https://umap-project.org">uMap</a>, un projet OpenStreetMap
+        </p>
+
+        <!-- External links -->
+        <ul class="fr-footer__content-list">
+          <li class="fr-footer__content-item">
+            <a class="fr-footer__content-link" target="_blank" href="https://legifrance.gouv.fr">legifrance.gouv.fr</a>
+          </li>
+          <li class="fr-footer__content-item">
+            <a class="fr-footer__content-link" target="_blank" href="https://gouvernement.fr">gouvernement.fr</a>
+          </li>
+          <li class="fr-footer__content-item">
+            <a class="fr-footer__content-link" target="_blank" href="https://service-public.fr">service-public.fr</a>
+          </li>
+          <li class="fr-footer__content-item">
+            <a class="fr-footer__content-link" target="_blank" href="https://data.gouv.fr">data.gouv.fr</a>
+          </li>
+        </ul>
+
+        <!-- uMap hosting and contact info -->
+        <div class="fr-footer__hosting">
+          {% if UMAP_HOST_INFOS.url and UMAP_HOST_INFOS.name %}
+            <p>{% trans "Hosted by" %} <a href="{{ UMAP_HOST_INFOS.url }}">{{ UMAP_HOST_INFOS.name }}</a></p>
+          {% endif %}
+          {% if UMAP_HOST_INFOS.email %}
+            <p><a href="mailto:{{ UMAP_HOST_INFOS.email }}">{% trans "Contact" %}</a></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer bottom -->
+    <div class="fr-footer__bottom">
+      <ul class="fr-footer__bottom-list">
+        <li class="fr-footer__bottom-item">
+          <a class="fr-footer__bottom-link" href="#">{% trans "Site map" %}</a>
+        </li>
+        <li class="fr-footer__bottom-item">
+          <a class="fr-footer__bottom-link" href="#">{% trans "Accessibility" %} : non/partiellement/totalement conforme</a>
+        </li>
+        <li class="fr-footer__bottom-item">
+          <a class="fr-footer__bottom-link" href="#">{% trans "Legal notice" %}</a>
+        </li>
+        <li class="fr-footer__bottom-item">
+          <a class="fr-footer__bottom-link" href="#">{% trans "Privacy policy" %}</a>
+        </li>
+        <li class="fr-footer__bottom-item">
+          <a class="fr-footer__bottom-link" href="#">{% trans "Cookie management" %}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </footer>

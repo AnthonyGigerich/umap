@@ -635,6 +635,7 @@ class MapDetailMixin(SessionMixin):
             "importers": settings.UMAP_IMPORTERS,
             "defaultLabelKeys": settings.UMAP_LABEL_KEYS,
             "help_links": settings.UMAP_HELP_LINKS,
+            "focus_country": settings.UMAP_FOCUS_COUNTRY,
         }
         if settings.OPENROUTESERVICE_APIKEY:
             properties["ORSAPIKey"] = settings.OPENROUTESERVICE_APIKEY

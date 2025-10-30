@@ -36,4 +36,8 @@ mkdir -p umap/static/umap/vendors/openrouteservice/ && cp node_modules/openroute
 mkdir -p umap/static/umap/vendors/snapdom/ && cp node_modules/@zumer/snapdom/dist/snapdom.min.mjs umap/static/umap/vendors/snapdom/
 mkdir -p umap/static/umap/vendors/simple-elevation-chart/ && cp node_modules/simple-elevation-chart/src/elevation.* umap/static/umap/vendors/simple-elevation-chart/
 
+# DSFR: copy stylesheet and utilities into static vendors
+mkdir -p umap/static/umap/vendors/dsfr/ && cp -r node_modules/@gouvfr/dsfr/dist/* umap/static/umap/vendors/dsfr/
+mkdir -p umap/static/umap/vendors/dsfr/utility/ && cp -r node_modules/@gouvfr/dsfr/dist/utility/* umap/static/umap/vendors/dsfr/utility/
+
 echo 'Done!'

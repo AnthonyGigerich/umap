@@ -37,6 +37,7 @@
   "homepage": "http://wiki.openstreetmap.org/wiki/UMap",
   "dependencies": {
     "@dwayneparton/geojson-to-gpx": "^0.2.0",
+    "@gouvfr/dsfr": "^1.13.2",
     "@placemarkio/tokml": "0.3.4",
     "@tmcw/togeojson": "^7.1.0",
     "@zumer/snapdom": "^1.9.8",

@@ -1,44 +1,145 @@
 {% load i18n %}
 
-<nav class="umap-nav">
-  <section>
-    {% include "umap/branding.html" %}
-  </section>
-  <section>
-    <ul>
-      {% if user.is_authenticated %}
-        <li>
-          <a href="{% url 'user_dashboard' %}">{% trans "My Dashboard" %} ({{ user }})</a>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      var currentUrl = new URL(window.location.href);
+      var currentPath = currentUrl.origin + currentUrl.pathname;
+      var navbar = document.querySelector(".fr-nav__list");
+      var navItems = navbar.querySelectorAll(".fr-nav__item");
+      
+      // Function to normalize path by removing trailing slash and extra segments
+      function normalizePath(path) {
+          // Remove trailing slash
+          if (path.endsWith('/')) {
+              path = path.slice(0, -1);
+          }
+          return path;
+      }
+      
+      navItems.forEach(function (item) {
+          var link = item.querySelector(".fr-nav__link");
+          if (!link) return;
+          
+          var linkUrl = new URL(link.href);
+          var linkPath = linkUrl.origin + linkUrl.pathname;
+          
+          // Normalize both paths for comparison
+          var normalizedCurrentPath = normalizePath(currentPath);
+          var normalizedLinkPath = normalizePath(linkPath);
+
+          console.log("Comparing current path:", normalizedCurrentPath, "with link path:", normalizedLinkPath);
+          
+          // Check if current path starts with the link path (for sub-pages)
+          // But avoid matching root/index with everything
+          if (normalizedCurrentPath === normalizedLinkPath) {
+              // If link is just the origin (root/index), only match if current path is also root
+              var linkUrl = new URL(link.href);
+              if (linkUrl.pathname === '/' || linkUrl.pathname === '') {
+                  // Root link should only match root path
+                  if (currentUrl.pathname === '/' || currentUrl.pathname === '') {
+                      link.setAttribute("aria-current", "page");
+                  }
+              } else {
+                  // Non-root links can match their sub-paths
+                  link.setAttribute("aria-current", "page");
+              }
+          }
+      });
+  });
+</script>
+
+
+<header role="banner" class="fr-header">
+  <div class="fr-header__body">
+    <div class="fr-container">
+      <div class="fr-header__body-row">
+        <div class="fr-header__brand fr-enlarge-link">
+          <div class="fr-header__brand-top">
+            <div class="fr-header__logo">
+              <p class="fr-logo">
+                Ministères
+                <br />
+                Aménagement
+                <br />
+                du territoire
+                <br />
+                Transition
+                <br />
+                écologique
+              </p>
+            </div>
+            <div class="fr-header__navbar">
+              <button class="fr-btn--menu fr-btn"
+                      data-fr-opened="false"
+                      aria-controls="modal-499"
+                      aria-haspopup="menu"
+                      id="button-500"
+                      title="Menu">Menu</button>
+            </div>
+          </div>
+          <div class="fr-header__service">
+            <a href="{% url 'home' %}"
+               title="Accueil - [Nom de l'application] - Ministères Aménagement du territoire et Transition écologique">
+              <p class="fr-header__service-title">Nom de l'application</p>
+            </a>
+            <p class="fr-header__service-tagline">Catchphrase</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fr-header__menu fr-modal"
+       id="modal-499"
+       aria-labelledby="button-500">
+    <div class="fr-container">
+      <button class="fr-btn--close fr-btn" aria-controls="modal-499" title="Fermer">Fermer</button>
+      <div class="fr-header__menu-links"></div>
+    </div>
+  </div>
+
+  <!-- DSFR Navigation menu -->
+  <div class="fr-header__menu fr-nav" id="header-navigation" role="navigation" aria-label="{% trans 'Main menu' %}">
+    <div class="fr-container">
+      <ul class="fr-nav__list">
+        <!-- Home -->
+        <li class="fr-nav__item">
+          <a class="fr-nav__link" href="{% url 'home' %}">{% trans 'Home' %}</a>
         </li>
-        <li>
-          <a href="{{ user.get_stars_url }}">{% trans "Starred maps" %}</a>
-        </li>
-      {% else %}
-        <li>
-          <a href="{% url "login" %}" class="login">{% trans "Log in" %} / {% trans "Sign in" %}</a>
-        </li>
-      {% endif %}
-      <li>
-        <a href="{% url "about" %}">{% trans "About" %}</a>
-      </li>
-      <li>
-        <a href="{{ UMAP_HELP_URL }}">{% trans "Help" %}</a>
-      </li>
-      {% if user.is_authenticated %}
-        {% if user.has_usable_password %}
-          <li>
-            <a href="{% url "password_change" %}">{% trans "Change password" %}</a>
+
+        <!-- Authenticated user links -->
+        {% if user.is_authenticated %}
+          <li class="fr-nav__item">
+            <a class="fr-nav__link" href="{% url 'user_dashboard' %}">{% trans 'My Dashboard' %} ({{ user }})</a>
+          </li>
+          <li class="fr-nav__item">
+            <a class="fr-nav__link" href="{{ user.get_stars_url }}">{% trans 'Starred maps' %}</a>
+          </li>
+        {% else %}
+          <li class="fr-nav__item">
+            <a class="fr-nav__link" href="{% url 'login' %}">{% trans 'Log in' %} / {% trans 'Sign in' %}</a>
           </li>
         {% endif %}
-        <li>
-          <a href="{% url "logout" %}" class="logout">{% trans "Log out" %}</a>
-        </li>
-      {% endif %}
-      {% if not UMAP_READONLY %}
-        <li>
-          <a href="{% url "map_new" %}" class="button button-primary">{% trans "Create a map" %}</a>
-        </li>
-      {% endif %}
-    </ul>
-  </section>
-</nav>
+
+        {% if UMAP_HELP_URL %}
+          <li class="fr-nav__item">
+            <a class="fr-nav__link" href="{{ UMAP_HELP_URL }}">{% trans 'Help' %}</a>
+          </li>
+        {% endif %}
+
+        <!-- Account settings -->
+        {% if user.is_authenticated %}
+          {% if user.has_usable_password %}
+            <li class="fr-nav__item">
+              <a class="fr-nav__link" href="{% url 'password_change' %}">{% trans 'Change password' %}</a>
+            </li>
+          {% endif %}
+          <li class="fr-nav__item">
+            <a class="fr-nav__link" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </div>
+  </div>
+</header>
+<br />
