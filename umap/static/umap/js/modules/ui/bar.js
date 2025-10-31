@@ -22,6 +22,11 @@ const TOP_BAR_TEMPLATE = `
         </button>
     </div>
     <div class="umap-right-edit-toolbox" data-ref="right">
+  <button class="flat quick-jump" data-ref="guadeloupeButton" title="Guadeloupe">Guadeloupe</button>
+  <button class="flat quick-jump" data-ref="martiniqueButton" title="Martinique">Martinique</button>
+  <button class="flat quick-jump" data-ref="guyaneButton" title="Guyane">Guyane</button>
+  <button class="flat quick-jump" data-ref="reunionButton" title="La Réunion">La Réunion</button>
+  <button class="flat quick-jump" data-ref="mayotteButton" title="Mayotte">Mayotte</button>
         <button class="connected-peers round" type="button" data-ref="peers">
           <i class="icon icon-16 icon-peers icon-black"></i>
           <span></span>
@@ -135,6 +140,74 @@ export class TopBar extends WithTemplate {
       this._umap.importer.open()
       this._umap.importer.showImporters()
     })
+    // Quick-jump buttons for French overseas regions (DOM/TOM)
+    // Coordinates/bounds are approximate; adjust as needed.
+    if (this.elements.guadeloupeButton) {
+      this.elements.guadeloupeButton.addEventListener('click', () => {
+        try {
+          // Guadeloupe approx bounds
+          const bounds = L.latLngBounds([
+            [15.8, -61.9], // SW
+            [16.6, -61.0], // NE
+          ])
+          this._umap._leafletMap.fitBounds(bounds)
+        } catch (e) {
+          console.error('Guadeloupe quick-jump failed', e)
+        }
+      })
+    }
+
+    if (this.elements.martiniqueButton) {
+      this.elements.martiniqueButton.addEventListener('click', () => {
+        try {
+          // Martinique approx bounds
+          const bounds = L.latLngBounds([
+            [14.3, -61.3],
+            [14.9, -60.7],
+          ])
+          this._umap._leafletMap.fitBounds(bounds)
+        } catch (e) {
+          console.error('Martinique quick-jump failed', e)
+        }
+      })
+    }
+
+    if (this.elements.guyaneButton) {
+      this.elements.guyaneButton.addEventListener('click', () => {
+        try {
+          // French Guiana (Guyane) - use large bounds to cover the department
+          const bounds = L.latLngBounds([
+            [2.0, -54.5],
+            [6.5, -50.5],
+          ])
+          this._umap._leafletMap.fitBounds(bounds)
+        } catch (e) {
+          console.error('Guyane quick-jump failed', e)
+        }
+      })
+    }
+
+    if (this.elements.reunionButton) {
+      this.elements.reunionButton.addEventListener('click', () => {
+        try {
+          // La Réunion center + zoom (approx)
+          this._umap._leafletMap.setView([-21.115141, 55.536384], 10)
+        } catch (e) {
+          console.error('La Réunion quick-jump failed', e)
+        }
+      })
+    }
+
+    if (this.elements.mayotteButton) {
+      this.elements.mayotteButton.addEventListener('click', () => {
+        try {
+          // Mayotte center + zoom (approx)
+          this._umap._leafletMap.setView([-12.8275, 45.1662], 10)
+        } catch (e) {
+          console.error('Mayotte quick-jump failed', e)
+        }
+      })
+    }
     this.elements.redo.addEventListener('click', () => this._umap.redo())
     this.elements.undo.addEventListener('click', () => this._umap.undo())
     this.elements.undo.addEventListener('mouseover', () => {
