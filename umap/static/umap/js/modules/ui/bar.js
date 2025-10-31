@@ -22,11 +22,12 @@ const TOP_BAR_TEMPLATE = `
         </button>
     </div>
     <div class="umap-right-edit-toolbox" data-ref="right">
-  <button class="flat quick-jump" data-ref="guadeloupeButton" title="Guadeloupe">Guadeloupe</button>
-  <button class="flat quick-jump" data-ref="martiniqueButton" title="Martinique">Martinique</button>
-  <button class="flat quick-jump" data-ref="guyaneButton" title="Guyane">Guyane</button>
-  <button class="flat quick-jump" data-ref="reunionButton" title="La Réunion">La Réunion</button>
-  <button class="flat quick-jump" data-ref="mayotteButton" title="Mayotte">Mayotte</button>
+        <button class="flat quick-jump" data-ref="franceButton" title="France">France</button>
+        <button class="flat quick-jump" data-ref="guadeloupeButton" title="Guadeloupe">Guadeloupe</button>
+        <button class="flat quick-jump" data-ref="martiniqueButton" title="Martinique">Martinique</button>
+        <button class="flat quick-jump" data-ref="guyaneButton" title="Guyane">Guyane</button>
+        <button class="flat quick-jump" data-ref="reunionButton" title="La Réunion">La Réunion</button>
+        <button class="flat quick-jump" data-ref="mayotteButton" title="Mayotte">Mayotte</button>
         <button class="connected-peers round" type="button" data-ref="peers">
           <i class="icon icon-16 icon-peers icon-black"></i>
           <span></span>
@@ -141,7 +142,6 @@ export class TopBar extends WithTemplate {
       this._umap.importer.showImporters()
     })
     // Quick-jump buttons for French overseas regions (DOM/TOM)
-    // Coordinates/bounds are approximate; adjust as needed.
     if (this.elements.guadeloupeButton) {
       this.elements.guadeloupeButton.addEventListener('click', () => {
         try {
@@ -205,6 +205,27 @@ export class TopBar extends WithTemplate {
           this._umap._leafletMap.setView([-12.8275, 45.1662], 10)
         } catch (e) {
           console.error('Mayotte quick-jump failed', e)
+        }
+      })
+    }
+    if (this.elements.franceButton) {
+      this.elements.franceButton.addEventListener('click', () => {
+        try {
+          // If the map has a saved default center/zoom, use it.
+          const center = this._umap.properties.center
+          const zoom = this._umap.properties.zoom
+          if (center && zoom !== undefined) {
+            this._umap._leafletMap.setView([center.lat, center.lng], zoom)
+            return
+          }
+          // Fallback: fit to mainland France bounds (includes metropole)
+          const bounds = L.latLngBounds([
+            [41.0, -5.5], // SW (approx southwestern tip)
+            [51.5, 9.6],  // NE (approx northeastern tip)
+          ])
+          this._umap._leafletMap.fitBounds(bounds)
+        } catch (e) {
+          console.error('France quick-jump failed', e)
         }
       })
     }

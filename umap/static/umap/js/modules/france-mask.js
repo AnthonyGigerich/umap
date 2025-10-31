@@ -76,10 +76,65 @@ export async function applyFranceMask(map) {
       [-90, -180],
     ]
 
-    const delta = 0.05 // ~5 km
-    const holes = getFranceHoles(france).map((ring) =>
-      ring.map(([lat, lng]) => [lat + delta, lng + delta])
-    )
+    // Shift the mask by ~1 km to the south and west (bottom and left).
+    // We compute per-point degree offsets because longitude degrees vary with latitude.
+    const shiftKm = 1 // kilometers to shift (positive value)
+
+    // Additionally expand (inflate) the polygon by a small amount so the
+    // masked area definitely covers nearby tiles/features. This is an
+    // outward radial expansion of `expandKm` after the shift.
+    const expandKm = 1 // kilometers to expand outward
+
+    function shiftPoint([lat, lng]) {
+      // Approximate conversions:
+      //  - 1 degree latitude ~= 110.574 km (varies slightly with lat)
+      //  - 1 degree longitude ~= 111.320 * cos(lat) km
+      const latDegPerKm = 1 / 110.574
+      const dLat = -shiftKm * latDegPerKm // negative -> move south
+
+      // Protect against cos(lat) being 0 (lat ~= 90); France latitudes are safe.
+      const cosLat = Math.cos((lat * Math.PI) / 180) || 1
+      const lonDegPerKm = 1 / (111.320 * cosLat)
+      const dLng = -shiftKm * lonDegPerKm // negative -> move west
+
+      return [lat + dLat, lng + dLng]
+    }
+
+    function shiftAndExpandRing(ring) {
+      // Compute a simple centroid to push points radially outward from.
+      const centroid = ring.reduce(
+        (acc, [lat, lng]) => {
+          acc.lat += lat
+          acc.lng += lng
+          return acc
+        },
+        { lat: 0, lng: 0 }
+      )
+      const centroidLat = centroid.lat / ring.length
+      const centroidLng = centroid.lng / ring.length
+
+      return ring.map(([lat, lng]) => {
+        // Apply the global shift first
+        const [sLat, sLng] = shiftPoint([lat, lng])
+
+        // push outward by `expandKm` along the vector from centroid
+        const dx = sLat - centroidLat
+        const dy = sLng - centroidLng
+        const dist = Math.hypot(dx, dy)
+        if (dist === 0) return [sLat, sLng]
+
+        const latDegPerKm = 1 / 110.574
+        const dLatExp = (expandKm * latDegPerKm) * (dx / dist)
+
+        const cosCentroidLat = Math.cos((centroidLat * Math.PI) / 180) || 1
+        const lonDegPerKm = 1 / (111.320 * cosCentroidLat)
+        const dLngExp = (expandKm * lonDegPerKm) * (dy / dist)
+
+        return [sLat + dLatExp, sLng + dLngExp]
+      })
+    }
+
+    const holes = getFranceHoles(france).map((ring) => shiftAndExpandRing(ring))
 
     const rings = [outer].concat(holes)
 
