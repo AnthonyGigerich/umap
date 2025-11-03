@@ -28,9 +28,13 @@
      <br />
   {% endif %}
   {% if UMAP_DEMO_SITE %}
-    <div class="wrapper demo-instance-warning">
-      <div class="row">
-        {% blocktrans with repo_url="https://github.com/umap-project/umap" stable_url="http://umap.openstreetmap.fr" %}This is a demo instance, used for tests and pre-rolling releases. If you need a stable instance, please use <a href="{{ stable_url }}">{{ stable_url }}</a>. You can also host your own instance, it's <a href="{{ repo_url }}">open source</a>!{% endblocktrans %}
+    <div class="fr-notice fr-notice--info">
+      <div class="fr-container">
+        <div class="fr-notice__body">
+          <p>
+            <span class="fr-notice__title">Il s'agit d'un site de démonstration, utilisé pour les tests et validation avant diffusion. Si vous avez besoin d'une version stable, utilisez plutôt <a href="http://umap.openstreetmap.fr">http://umap.openstreetmap.fr</a>. Vous pouvez aussi mettre en place votre propre version, c'est <a href="https://github.com/umap-project/umap">open source</a> ! </span>
+          </p>
+        </div>
       </div>
     </div>
     <br />

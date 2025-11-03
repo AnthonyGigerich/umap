@@ -43,15 +43,15 @@
 .importers ul .communesfr:before {
     background-image: url(../img/importers/communesfr.svg);
 }
-.importer.données-bleues h3:before,
-.importers ul .données-bleues:before {
+.importer.solutions-bleues h3:before,
+.importers ul .solutions-bleues:before {
     content: '';
     display: block;
     width: 50px;
     height: 50px;
     opacity: 0.8;
-    background-color: #ccc;
-    background-image: url(../img/importers/données-bleues.svg);
+    background-color: #007bff; /* blue */
+    background-image: url(../img/importers/solutions-bleues.svg);
     background-repeat: no-repeat;
     background-position: center;
     background-size: 60%;
@@ -59,15 +59,15 @@
     margin-right: 8px;
     margin: 0 auto 8px;
 }
-.importer.données-vertes h3:before,
-.importers ul .données-vertes:before {
+.importer.solutions-vertes h3:before,
+.importers ul .solutions-vertes:before {
     content: '';
     display: block;
     width: 50px;
     height: 50px;
     opacity: 0.8;
-    background-color: #ccc;
-    background-image: url(../img/importers/données-vertes.svg);
+    background-color: #28a745; /* green */
+    background-image: url(../img/importers/solutions-vertes.svg);
     background-repeat: no-repeat;
     background-position: center;
     background-size: 60%;
@@ -75,15 +75,45 @@
     margin-right: 8px;
     margin: 0 auto 8px;
 }
-.importer.données-grises h3:before,
-.importers ul .données-grises:before {
+.importer.solutions-grises h3:before,
+.importers ul .solutions-grises:before {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 50px;
+    opacity: 0.8;
+    background-color: #bbb;
+    background-image: url(../img/importers/solutions-grises.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    border-radius: 8px;
+    margin: 0 auto 8px;
+}
+.importer.données-d\'exposition h3:before,
+.importers ul .données-d\'exposition:before {
     content: '';
     display: block;
     width: 50px;
     height: 50px;
     opacity: 0.8;
     background-color: #ccc;
-    background-image: url(../img/importers/données-grises.svg);
+    background-image: url(../img/importers/donnees-exposition.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    border-radius: 8px;
+    margin: 0 auto 8px;
+}
+.importer.données-de-contexte h3:before,
+.importers ul .données-de-contexte:before {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 50px;
+    opacity: 0.8;
+    background-color: #ccc;
+    background-image: url(../img/importers/donnees-de-contexte.svg);
     background-repeat: no-repeat;
     background-position: center;
     background-size: 60%;

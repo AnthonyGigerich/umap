@@ -188,8 +188,9 @@ export default class Importer extends Utils.WithTemplate {
     if (!this.IMPORTERS.length) return
     const [element, { grid }] = Utils.loadTemplateWithRefs(GRID_TEMPLATE)
     for (const plugin of this.IMPORTERS.sort((a, b) => (a.name > b.name ? 1 : -1))) {
+      const label = plugin.name === 'Overpass' ? translate('Interroger OSM') : plugin.name
       const button = Utils.loadTemplate(
-        `<li><button type="button" class="${plugin.id}">${plugin.name}</button></li>`
+        `<li><button type="button" class="${plugin.id}">${label}</button></li>`
       )
       button.addEventListener('click', () => plugin.open(this))
       grid.appendChild(button)
