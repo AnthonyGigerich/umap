@@ -1125,6 +1125,34 @@ class ToggleMapStarStatus(View):
         )
 
 
+class SetSimplifiedMode(View):
+    """Set simplified mode in the user's session (accepts JSON or form data).
+
+    Expects a POST with 'simplified' boolean (JSON body or form field). Stores
+    it in request.session['simplified_mode'] and returns the stored value.
+    """
+
+    def post(self, request, *args, **kwargs):
+        # Try JSON
+        simplified = None
+        try:
+            data = json.loads(request.body.decode('utf-8') or '{}')
+            simplified = data.get('simplified')
+        except Exception:
+            simplified = None
+        if simplified is None:
+            # Fallback to POST data
+            simplified = request.POST.get('simplified')
+        # Normalize to boolean
+        if isinstance(simplified, str):
+            simplified = simplified.lower() in ('1', 'true', 'yes', 'on')
+        else:
+            simplified = bool(simplified)
+        request.session['simplified_mode'] = simplified
+        request.session.modified = True
+        return simple_json_response(simplified=simplified)
+
+
 class MapShortUrl(RedirectView):
     query_string = True
     permanent = True

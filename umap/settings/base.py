@@ -340,6 +340,10 @@ UMAP_READONLY = env("UMAP_READONLY", default=False)
 UMAP_GZIP = True
 LOCALE_PATHS = [os.path.join(PROJECT_DIR, "locale")]
 
+# Simplified mode: if True, the app will start in a simplified UI mode for users.
+# This can be overridden via environment variable SIMPLIFIED_MODE_DEFAULT.
+SIMPLIFIED_MODE_DEFAULT = env.bool("SIMPLIFIED_MODE_DEFAULT", default=True)
+
 LEAFLET_LONGITUDE = env.int("LEAFLET_LONGITUDE", default=2)
 LEAFLET_LATITUDE = env.int("LEAFLET_LATITUDE", default=51)
 LEAFLET_ZOOM = env.int("LEAFLET_ZOOM", default=6)

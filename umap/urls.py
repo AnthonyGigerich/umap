@@ -78,6 +78,7 @@ i18n_urls = [
         views.TemplateList.as_view(),
         name="template_list",
     ),
+    re_path(r"^simplified-mode/set/$", views.SetSimplifiedMode.as_view(), name="simplified_mode_set"),
 ]
 i18n_urls += decorated_patterns(
     [can_view_map, cache_control(must_revalidate=True)],

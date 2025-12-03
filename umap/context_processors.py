@@ -15,6 +15,11 @@ def settings(request):
         "UMAP_HOST_INFOS": djsettings.UMAP_HOST_INFOS,
         "UMAP_ALLOW_EDIT_PROFILE": djsettings.UMAP_ALLOW_EDIT_PROFILE,
         "UMAP_TAGS": djsettings.UMAP_TAGS,
+        # Simplified mode initial value: read per-session override if present,
+        # otherwise use default. Front-end still persists in localStorage too.
+        "SIMPLIFIED_MODE": request.session.get(
+            "simplified_mode", getattr(djsettings, "SIMPLIFIED_MODE_DEFAULT", True)
+        ),
     }
 
 
