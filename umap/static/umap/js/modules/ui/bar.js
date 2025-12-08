@@ -380,13 +380,10 @@ const EDIT_BAR_TEMPLATE = `
       'Draw along routes'
     )}"><i class="icon icon-24 icon-route"></i></button></li>
     <hr>
+    <li data-ref="import" hidden><button type="button"><i class="icon icon-24 icon-upload"></i></button></li>
     <li data-ref="caption" hidden><button data-getstarted type="button" title="${translate(
       'Edit map name and caption'
     )}"><i class="icon icon-24 icon-caption"></i></button></li>
-    <li data-ref="import" hidden><button type="button"><i class="icon icon-24 icon-upload"></i></button></li>
-    <li data-ref="templates" hidden><button type="button" title="${translate(
-      'Load template'
-    )}" data-getstarted><i class="icon icon-24 icon-template"></i></button></li>
     <li data-ref="layers" hidden><button type="button" title="${translate(
       'Manage layers'
     )}"><i class="icon icon-24 icon-layers"></i></button></li>
@@ -397,11 +394,6 @@ const EDIT_BAR_TEMPLATE = `
     <li data-ref="permissions" hidden><button type="button" title="${translate(
       'Update permissions and editors'
     )}"><i class="icon icon-24 icon-key"></i></button></li>
-    <li data-ref="rules" hidden>
-      <button type="button" title="${translate('Conditional style rules')}">
-        <i class="icon icon-24 icon-rules"></i>
-      </button>
-    </li>
     <li data-ref="settings" hidden><button data-getstarted type="button" title="${translate(
       'Map advanced properties'
     )}"><i class="icon icon-24 icon-settings"></i></button></li>
@@ -411,7 +403,7 @@ const EDIT_BAR_TEMPLATE = `
 export class EditBar extends WithTemplate {
   constructor(umap, leafletMap, parent) {
     super()
-    this.templateIimporter = new TemplateImporter(umap)
+    this.templateImporter = new TemplateImporter(umap)
     this._umap = umap
     this._leafletMap = leafletMap
     this.loadTemplate(EDIT_BAR_TEMPLATE)
@@ -429,25 +421,27 @@ export class EditBar extends WithTemplate {
     this._onClick('route', () => this._leafletMap.editTools.startRoute())
     this._onClick('caption', () => this._umap.editCaption())
     this._onClick('import', () => this._umap.importer.open())
-    this._onClick('templates', () => this.templateIimporter.open())
+    // this._onClick('templates', () => this.templateImporter.open())
     this._onClick('layers', () => this._umap.editDatalayers())
     this._onClick('tilelayers', () => this._leafletMap.editTileLayers())
     this._onClick('center', () => this._umap.editCenter())
     this._onClick('permissions', () => this._umap.permissions.edit())
-    this._onClick('rules', () => {
-      const container = L.DomUtil.create('div')
-      this._umap.rules.edit(container)
-      this._umap.editPanel.open({ content: container, highlight: 'settings' })
-    })
+    // 'rules' control removed from template; related handler intentionally omitted
     this._onClick('settings', () => this._umap.edit())
     this._addTitle('import', 'IMPORT_PANEL')
     this._addTitle('marker', 'DRAW_MARKER')
     this._addTitle('polyline', 'DRAW_LINE')
     this._addTitle('polygon', 'DRAW_POLYGON')
-    // Hide center control in simplified mode
+    // Hide some controls in simplified mode
     if (document.body.classList.contains('simplified-mode')) {
       try {
         this.elements.center.hidden = true
+        // draw multilines/polygons are advanced features
+        this.elements.marker.hidden = true
+        this.elements.polyline.hidden = true
+        this.elements.polygon.hidden = true
+        // templates
+        this.elements.templates.hidden = true
       } catch (e) {
         // ignore if element not present
       }
@@ -463,13 +457,12 @@ export class EditBar extends WithTemplate {
     this.elements.multipolygon.hidden = !(editedFeature instanceof Polygon)
     this.elements.caption.hidden = this._umap.properties.editMode !== 'advanced'
     this.elements.import.hidden = this._umap.properties.editMode !== 'advanced'
-    this.elements.templates.hidden =
-      this._umap.properties.editMode !== 'advanced' && !this._umap.datalayers.count()
+    // this.elements.templates.hidden = this._umap.properties.editMode !== 'advanced' && !this._umap.datalayers.count()
     this.elements.layers.hidden = this._umap.properties.editMode !== 'advanced'
     this.elements.tilelayers.hidden = this._umap.properties.editMode !== 'advanced'
     this.elements.center.hidden = this._umap.properties.editMode !== 'advanced'
     this.elements.permissions.hidden = this._umap.properties.editMode !== 'advanced'
-    this.elements.rules.hidden = this._umap.properties.editMode !== 'advanced'
+    // this.elements.rules removed from template; no visibility toggle needed
     this.elements.settings.hidden = this._umap.properties.editMode !== 'advanced'
     this.elements.route.hidden = !this._umap.properties.ORSAPIKey
   }

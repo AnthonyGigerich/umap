@@ -757,7 +757,13 @@ export default class Umap {
       'properties.description',
       'properties.is_template',
     ]
-
+    // If simplified mode is active, remove category/tags related fields
+    if (document.body.classList.contains('simplified-mode')) {
+      // remove an explicit properties.category if present
+      for (let i = metadataFields.length - 1; i >= 0; i--) {
+        if (metadataFields[i] === 'properties.category') metadataFields.splice(i, 1)
+      }
+    }
     DomUtil.createTitle(container, translate('Edit map details'), 'icon-caption')
     const builder = new MutatingForm(this, metadataFields, {
       className: 'map-metadata',
@@ -766,12 +772,15 @@ export default class Umap {
     const form = builder.build()
     container.appendChild(form)
 
-    const tags = DomUtil.createFieldset(container, translate('Tags'))
-    const tagsFields = ['properties.tags']
-    const tagsBuilder = new MutatingForm(this, tagsFields, {
-      umap: this,
-    })
-    tags.appendChild(tagsBuilder.build())
+    // Tags / Categories can be hidden in simplified mode
+    if (!document.body.classList.contains('simplified-mode')) {
+      const tags = DomUtil.createFieldset(container, translate('Tags'))
+      const tagsFields = ['properties.tags']
+      const tagsBuilder = new MutatingForm(this, tagsFields, {
+        umap: this,
+      })
+      tags.appendChild(tagsBuilder.build())
+    }
     const credits = DomUtil.createFieldset(container, translate('Credits'))
     const creditsFields = [
       'properties.licence',
@@ -906,6 +915,7 @@ export default class Umap {
   }
 
   _editTilelayer(container) {
+  if (document.body.classList.contains('simplified-mode')) return
     if (!Utils.isObject(this.properties.tilelayer)) {
       this.properties.tilelayer = {}
     }
@@ -959,6 +969,7 @@ export default class Umap {
   }
 
   _editOverlay(container) {
+  if (document.body.classList.contains('simplified-mode')) return
     if (!Utils.isObject(this.properties.overlay)) {
       this.properties.overlay = {}
     }
@@ -1007,6 +1018,7 @@ export default class Umap {
   }
 
   _editBounds(container) {
+  if (document.body.classList.contains('simplified-mode')) return
     if (!Utils.isObject(this.properties.limitBounds)) {
       this.properties.limitBounds = {}
     }
@@ -1578,7 +1590,8 @@ export default class Umap {
       this.importUmapFile(file, 'umap')
     } else {
       if (!layer) layer = this.createDirtyDataLayer({ name: file.name })
-      layer.importFromFile(file, type)
+  console.log('processFileToImport: importing file', file.name, 'type', type)
+  layer.importFromFile(file, type)
     }
   }
 
@@ -1590,7 +1603,8 @@ export default class Umap {
   }
 
   importRaw(rawData) {
-    const importedData = JSON.parse(rawData)
+  console.log('umap.importRaw: rawData length', rawData?.length)
+  const importedData = JSON.parse(rawData)
     let remoteOrigin = ''
     if (importedData.uri) {
       const uri = new URL(importedData.uri)
@@ -1614,6 +1628,25 @@ export default class Umap {
       delete geojson._umap_options?.id // Never trust an id at this stage
       if (geojson._umap_options?.iconUrl?.startsWith('/')) {
         geojson._umap_options.iconUrl = remoteOrigin + geojson._umap_options.iconUrl
+      }
+      // If the imported layer contains many inline features, prefer Cluster
+      // rendering to avoid creating thousands of individual markers.
+      try {
+        const featureCount = Array.isArray(geojson.features) ? geojson.features.length : undefined
+        console.log(featureCount, 'features found in imported layer')
+        const CLUSTER_THRESHOLD = 1000
+        if (featureCount > CLUSTER_THRESHOLD) {
+          console.log("Clustering imported layer with", featureCount, "features")
+          geojson._umap_options = geojson._umap_options || {}
+          // Only force cluster if user didn't explicitly set a layer type
+          if (!geojson._umap_options.type && !geojson._umap_options.properties?.type) {
+            // DataLayer expects type at the top-level of _umap_options
+            geojson._umap_options.type = 'Cluster'
+            geojson._umap_options.cluster = geojson._umap_options.cluster || {}
+          }
+        }
+      } catch (e) {
+        console.debug('Error while checking import feature count for clustering', e)
       }
       const dataLayer = this.createDirtyDataLayer(geojson._umap_options)
       dataLayer.fromUmapGeoJSON(geojson)

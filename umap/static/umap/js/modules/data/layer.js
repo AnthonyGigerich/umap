@@ -638,12 +638,36 @@ export class DataLayer {
   }
 
   async importRaw(raw, format) {
+    console.log('importRaw: start parse', { format, size: raw?.length })
     return this._umap.formatter
       .parse(raw, format)
       .then((geojson) => {
+        console.log('importRaw: parsed geojson', {
+          type: geojson?.type,
+          features: Array.isArray(geojson?.features) ? geojson.features.length : undefined,
+        })
+        // If importing many features into an existing datalayer, prefer Cluster
+        // rendering to avoid creating thousands of individual markers.
+        try {
+          const featureCount = Array.isArray(geojson?.features)
+            ? geojson.features.length
+            : Array.isArray(geojson)
+            ? geojson.length
+            : undefined
+          const CLUSTER_THRESHOLD = 1000
+          if (featureCount > CLUSTER_THRESHOLD && !this.properties.type) {
+            this.properties.type = 'Cluster'
+            this.properties.cluster = this.properties.cluster || {}
+            // Force a layer reset so features are attached to the Cluster layer
+            this.resetLayer(true)
+          }
+        } catch (e) {
+          console.debug('Error while deciding to cluster import', e)
+        }
         this.sync.startBatch()
         const data = this.addData(geojson)
         this.sync.commitBatch()
+        console.log('importRaw: addData returned', { items: Array.isArray(data) ? data.length : typeof data })
         return data
       })
       .catch((error) => {
@@ -653,9 +677,32 @@ export class DataLayer {
   }
 
   readFile(f) {
+    const MAX_INLINE_FILE = 50 * 1024 * 1024 // 50 MB
     return new Promise((resolve) => {
+      console.log('readFile: starting read', { name: f?.name, size: f?.size, type: f?.type })
+      if (f?.size && f.size > MAX_INLINE_FILE) {
+        // Browsers often fail or run out of memory when reading very large files
+        // client-side. Give the user a clear message and avoid attempting the
+        // read which may silently return an empty string.
+        console.warn('readFile: file too large for client-side import, aborting read', { size: f.size })
+        Alert.error(
+          translate('File is too large to import in the browser. Please upload it to the server or split it into smaller files.'),
+          10000
+        )
+        resolve('')
+        return
+      }
+
       const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
+      reader.onloadend = () => {
+        console.log('readFile: finished read, result length', reader.result?.length)
+        resolve(reader.result)
+      }
+      reader.onerror = (e) => {
+        console.error('readFile: error reading file', e)
+        Alert.error(translate('Error reading file in browser'))
+        resolve('')
+      }
       reader.readAsText(f)
     })
   }
@@ -665,15 +712,27 @@ export class DataLayer {
     for (const file of files) {
       toLoad.push(this.importFromFile(file, type))
     }
-    const features = await Promise.all(toLoad)
+  console.log('importFromFiles: launching import for', files.length, 'files')
+  const features = await Promise.all(toLoad)
+  console.log('importFromFiles: finished, results per file:', features.map(f => Array.isArray(f) ? f.length : (f && f.length) || 0))
     return new Promise((resolve) => {
       resolve([].concat(...features))
     })
   }
 
   async importFromFile(file, type) {
-    type = type || Utils.detectFileType(f)
+  type = type || Utils.detectFileType(file)
+  console.log('importFromFile: file metadata', { name: file?.name, size: file?.size, type })
     const raw = await this.readFile(file)
+    console.log('importFromFile: raw length', raw?.length)
+    if (!raw) {
+      // Inform the user that large files should be uploaded to the server
+      Alert.error(
+        translate('Import produced no data. For large files, please upload them directly to the server.'),
+        8000
+      )
+      return []
+    }
     return this.importRaw(raw, type)
   }
 

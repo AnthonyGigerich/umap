@@ -260,7 +260,9 @@ export default class Importer extends Utils.WithTemplate {
   onFileChange() {
     let type = ''
     let newType
+    console.log('Importer.onFileChange: files selected', this.files && this.files.length)
     for (const file of this.files) {
+      console.log(' Importer.onFileChange: file', { name: file.name, size: file.size, type: file.type })
       newType = Utils.detectFileType(file)
       if (!type && newType) type = newType
       if (type && newType !== type) {
@@ -336,7 +338,9 @@ export default class Importer extends Utils.WithTemplate {
   full() {
     try {
       if (this.files.length) {
+        console.log('Importer.full: processing files count', this.files.length)
         for (const file of this.files) {
+          console.log(' Importer.full: file', { name: file.name, size: file.size, type: file.type })
           this._umap.processFileToImport(file, null, 'umap')
         }
       } else if (this.raw) {
@@ -390,6 +394,8 @@ export default class Importer extends Utils.WithTemplate {
     const layer = this.layer
     if (this.clear) layer.empty()
     if (this.files.length) {
+      console.log('Importer.copy: calling importFromFiles with files:', this.files.length)
+      for (const f of this.files) console.log(' Importer.copy file:', { name: f.name, size: f.size, type: f.type })
       promise = layer.importFromFiles(this.files, this.format)
     } else if (this.raw) {
       promise = layer.importRaw(this.raw, this.format)
@@ -420,16 +426,38 @@ export default class Importer extends Utils.WithTemplate {
     if (!features) return
     if (!features.length) {
       this.onError()
-    } else {
-      const bounds = new LatLngBounds()
-      for (const feature of features) {
+      return
+    }
+
+    const bounds = new LatLngBounds()
+    let validCount = 0
+    for (const feature of features) {
+      if (!feature) {
+        console.warn('Importer: skipping undefined feature')
+        continue
+      }
+      if (!feature.ui) {
+        console.warn('Importer: skipping feature without ui property', feature)
+        continue
+      }
+      try {
         const featureBounds = feature.ui.getBounds
           ? feature.ui.getBounds()
           : feature.ui.getCenter()
-        bounds.extend(featureBounds)
+        if (featureBounds) bounds.extend(featureBounds)
+        validCount += 1
+      } catch (e) {
+        console.warn('Importer: error getting bounds for feature, skipping', e, feature)
+        continue
       }
-      this.onSuccess(features.length)
-      layer.zoomToBounds(bounds)
     }
+
+    if (validCount === 0) {
+      // No usable features
+      this.onError()
+      return
+    }
+    this.onSuccess(validCount)
+    layer.zoomToBounds(bounds)
   }
 }

@@ -38,6 +38,7 @@ from django.http import (
 )
 from django.middleware.gzip import re_accepts_gzip
 from django.shortcuts import get_object_or_404
+from django.core.files.base import ContentFile
 from django.urls import resolve, reverse, reverse_lazy
 from django.utils import translation
 from django.utils.encoding import smart_bytes
@@ -633,6 +634,7 @@ class MapDetailMixin(SessionMixin):
             "featuresHaveOwner": settings.UMAP_DEFAULT_FEATURES_HAVE_OWNERS,
             "websocketEnabled": settings.REALTIME_ENABLED,
             "importers": settings.UMAP_IMPORTERS,
+            "UMAP_DATA_API": getattr(settings, 'UMAP_DATA_API', None),
             "defaultLabelKeys": settings.UMAP_LABEL_KEYS,
             "help_links": settings.UMAP_HELP_LINKS,
             "focus_country": settings.UMAP_FOCUS_COUNTRY,
@@ -1292,6 +1294,21 @@ class DataLayerCreate(FormLessEditMixin, CreateView):
             return HttpResponseBadRequest("UUID already exists")
 
         form.instance.uuid = uuid
+        # If the uploaded file is a GeoPackage, convert it to GeoJSON before saving.
+        geofile = self.request.FILES.get("geojson")
+        if geofile:
+            name = getattr(geofile, "name", "")
+            if name.lower().endswith(".gpkg"):
+                try:
+                    from .geodata import gpkg_to_geojson
+
+                    geojson_bytes = gpkg_to_geojson(geofile.file)
+                    # Save the converted GeoJSON into the model field without
+                    # saving the instance yet.
+                    form.instance.geojson.save(f"{uuid}.geojson", ContentFile(geojson_bytes), save=False)
+                except Exception as err:
+                    return HttpResponseBadRequest(f"Failed to convert GeoPackage: {err}")
+
         self.object = form.save()
         assert uuid == self.object.uuid
 
